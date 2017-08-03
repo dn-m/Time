@@ -13,27 +13,14 @@ import Time
 @testable import Timeline
 
 class TimelineTests: XCTestCase {
-    
-    // TODO: Use `Timeline.Clock`
-    
-    // Current time in nanoseconds (convert to Double then divide by 1_000_000_000)
-    var now: UInt64 {
-        return DispatchTime.now().uptimeNanoseconds
-    }
-    
-    var nowSeconds: Seconds {
-        return Double(now) / 1_000_000_000
-    }
 
     func testTimeStampToFrame() {
-        
-        let body: Timeline.Action.Body = { print("something") }
+
         let timeStamp: Seconds = 0.5
-        
         let timeline = Timeline(rate: 1/60)
-        timeline.schedule(body, at: timeStamp)
+        timeline.schedule(at: timeStamp) { print("something") }
         
-        XCTAssertEqual(timeline.schedule.count, 1)
+        XCTAssertEqual(timeline.schedule.atomic.count, 1)
     }
     
     func testStateAtInitStopped() {
@@ -42,19 +29,6 @@ class TimelineTests: XCTestCase {
             XCTFail()
             return
         }
-    }
-    
-    func testRemoveAll() {
-        
-        let timeline = Timeline()
-        
-        for offset in 0..<5 {
-            timeline.schedule({ }, at: Seconds(offset))
-        }
-        
-        XCTAssertEqual(timeline.schedule.count, 5)
-        timeline.removeAll()
-        XCTAssertEqual(timeline.schedule.count, 0)
     }
     
     func testFrameCalculationPlaybackRateOfOne() {
@@ -96,7 +70,6 @@ class TimelineTests: XCTestCase {
         )
         
         XCTAssertEqual(expectedFrames, result)
-        
     }
     
     // MARK: - Playback
@@ -124,17 +97,14 @@ class TimelineTests: XCTestCase {
         
         // Fill up Timeline
         for offset in 0..<5 {
-            timeline.schedule(increment, at: Seconds(offset))
+            timeline.schedule(at: Seconds(offset), performing: increment)
         }
         
-        // Assert that we have counted to five
-        let assertion = {
+        timeline.schedule(at: 5) {
             XCTAssertEqual(count, 5)
             unfulfilledExpectation.fulfill()
             timeline.stop()
         }
-        
-        timeline.schedule(assertion, at: 5)
         
         // Get things started
         timeline.start()
@@ -146,24 +116,19 @@ class TimelineTests: XCTestCase {
     func testFiveEventsGetTriggeredByLooping() {
         
         let unfulfilledExpectation = expectation(description: "Counter looping")
-        
-        // Gross little counter for testing
-        var count = 0
-        let increment = { count += 1 }
-        
+
         // Create Timeline
         let timeline = Timeline()
         
-        timeline.loop(action: increment, every: 1, offsetBy: 0)
+        // Gross little counter for testing
+        var count = 0
+        timeline.loop(every: 1, startingAt: 0) { count += 1 }
         
-        timeline.schedule(
-            {
-                XCTAssertEqual(count, 5)
-                timeline.stop()
-                unfulfilledExpectation.fulfill()
-            },
-            at: 4.1
-        )
+        timeline.schedule(at: 4.1) {
+            XCTAssertEqual(count, 5)
+            timeline.stop()
+            unfulfilledExpectation.fulfill()
+        }
         
         timeline.start()
         waitForExpectations(timeout: 4.2)
@@ -181,11 +146,9 @@ class TimelineTests: XCTestCase {
             // actual time
             let playbackTime = Seconds(offset) * 2
             
-            let assertion = {
+            timeline.schedule(at: Seconds(offset)) {
                 XCTAssertEqual(clock.elapsed, playbackTime, accuracy: 0.01)
             }
-            
-            timeline.schedule(assertion, at: Seconds(offset))
         }
         
         timeline.playbackRate = 0.5
@@ -209,11 +172,9 @@ class TimelineTests: XCTestCase {
             // actual time
             let playbackTime = Seconds(offset) / 2
             
-            let assertion = {
+            timeline.schedule(at: Seconds(offset)) {
                 XCTAssertEqual(clock.elapsed, playbackTime, accuracy: 0.01)
             }
-            
-            timeline.schedule(assertion, at: Seconds(offset))
         }
         
         timeline.playbackRate = 2
@@ -244,8 +205,8 @@ class TimelineTests: XCTestCase {
             XCTAssertEqual(clock.elapsed, 3, accuracy: 0.01)
         }
         
-        referenceTimeline.schedule(oneSecondReference, at: 1)
-        referenceTimeline.schedule(twoSecondsReference, at: 2)
+        referenceTimeline.schedule(at: 1, performing: oneSecondReference)
+        referenceTimeline.schedule(at: 2, performing: twoSecondsReference)
         
         // pause the reference timeline at one second
         let oneSecondRealLife = {
@@ -258,8 +219,8 @@ class TimelineTests: XCTestCase {
             referenceTimeline.resume()
         }
         
-        realLifeTimeline.schedule(oneSecondRealLife, at: 1)
-        realLifeTimeline.schedule(twoSecondsRealLife, at: 2)
+        realLifeTimeline.schedule(at: 1, performing: oneSecondRealLife)
+        realLifeTimeline.schedule(at: 2, performing: twoSecondsRealLife)
         
         clock.start()
         referenceTimeline.start()
@@ -293,7 +254,7 @@ class TimelineTests: XCTestCase {
         
         for (i, offset) in range.enumerated() {
             
-            let action = {
+            let operation = {
                 
                 // For now, don't test an event on first hit, as the offset should be 0
                 if offset > 0 {
@@ -319,7 +280,7 @@ class TimelineTests: XCTestCase {
                 }
             }
             
-            timeline.schedule(action, at: offset)
+            timeline.schedule(at: offset, performing: operation)
         }
         
         // Finish up 1 second after done
@@ -346,7 +307,7 @@ class TimelineTests: XCTestCase {
             timeline.stop()
         }
         
-        timeline.schedule(assertion, at: range.last!)
+        timeline.schedule(at: range.last!, performing: assertion)
         
         // Start the timeline
         timeline.start()

@@ -19,11 +19,6 @@ public typealias Frames = UInt64
 ///
 public class Timeline {
     
-    // MARK: - Associated Types
-
-    /// Storage of arrays of `Action` objects to be performed at offsets.
-    public typealias Schedule = SortedDictionary<Seconds, [Action]>
-    
     // MARK: - Nested Types
     
     /// Status of the `Timeline`.
@@ -99,7 +94,7 @@ public class Timeline {
     /// Creates an empty `Timeline`.
     public init(
         identifier: String = "",
-        actions: [(Seconds, Action)] = [],
+        schedule: Schedule = Schedule(),
         rate: Seconds = 1/120,
         playbackRate: Double = 1,
         performingOnCompletion completion: (() -> ())? = nil
@@ -108,9 +103,8 @@ public class Timeline {
         self.identifier = identifier
         self.rate = rate
         self.playbackRate = playbackRate
-        self.schedule = [:]
+        self.schedule = schedule
         self.completion = completion
-        actions.forEach { offset, action in add(action, at: offset) }
     }
     
     // MARK: - Instance Methods
@@ -167,8 +161,16 @@ public class Timeline {
     /// - returns: The seconds, frames, and actions values of the next event, if present.
     /// Otherwise, `nil`.
     private var next: (Seconds, Frames, [Action])? {
-        guard playbackIndex < schedule.keys.endIndex else { return nil }
-        let (nextSeconds, nextActions) = schedule[playbackIndex]
+
+        guard playbackIndex < schedule.atomic.keys.endIndex else {
+            print("done")
+            return nil
+        }
+
+        // Look in atomic
+
+        // Look in looping
+        let (nextSeconds, nextActions) = schedule.atomic[playbackIndex]
         let nextFrames = frames(
             scheduledDate: nextSeconds,
             lastPausedDate: lastPausedDate,
@@ -196,10 +198,7 @@ public class Timeline {
         
         if currentFrame >= nextFrame {
             nextActions.forEach { action in
-                action.body()
-                if case let .looping(interval, _) = action.kind {
-                    add(action.echo, at: nextSeconds + interval)
-                }
+                action.operation()
             }
             playbackIndex += 1
         }
@@ -227,6 +226,6 @@ extension Timeline: CustomStringConvertible {
     
     /// Printed description.
     public var description: String {
-        return schedule.map { "\($0)" }.joined(separator: "\n")
+        return schedule.description
     }
 }
