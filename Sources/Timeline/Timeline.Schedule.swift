@@ -14,8 +14,8 @@ extension Timeline {
     // MARK: - Schedule
     
     /// Adds the given `action` at the given `offset` in `Seconds`.
-    public func add(action body: @escaping Action.Body, at offset: Seconds) {
-        let action = Action(kind: .atomic, body: body)
+    public func schedule(_ atomicAction: @escaping Action.Body, at offset: Seconds) {
+        let action = Action(kind: .atomic, body: atomicAction)
         add(action, at: offset)
     }
     
@@ -27,12 +27,7 @@ extension Timeline {
         offsetBy offset: Seconds = 0
     )
     {
-        let action = Action(
-            kind: .looping(interval: interval, status: .source),
-            body: body
-        )
-        
-        add(action, at: offset)
+        add(Action(kind: .looping(interval: interval, status: .source), body: body), at: offset)
     }
     
     /// Adds the given `action` at the given `offset`.

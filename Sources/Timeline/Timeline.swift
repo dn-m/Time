@@ -102,7 +102,7 @@ public class Timeline {
         actions: [(Seconds, Action)] = [],
         rate: Seconds = 1/120,
         playbackRate: Double = 1,
-        completion: (() -> ())? = nil
+        performingOnCompletion completion: (() -> ())? = nil
     )
     {
         self.identifier = identifier
@@ -117,11 +117,7 @@ public class Timeline {
     
     /// Starts the `Timeline`.
     public func start() {
-        
-        if case .playing = status {
-            return
-        }
-        
+        if case .playing = status { return }
         playbackIndex = 0
         lastPausedDate = 0
         clock.start()
@@ -131,11 +127,7 @@ public class Timeline {
     
     /// Stops the `Timeline` from executing, and is placed at the beginning.
     public func stop() {
-        
-        if case .stopped = status {
-            return
-        }
-        
+        if case .stopped = status { return }
         lastPausedDate = 0
         timer?.stop()
         status = .stopped
@@ -143,11 +135,7 @@ public class Timeline {
     
     /// Pauses the `Timeline`.
     public func pause() {
-
-        if case .paused = status {
-            return
-        }
-        
+        if case .paused = status { return }
         lastPausedDate += clock.elapsed * playbackRate
         timer?.stop()
         status = .paused(lastPausedDate)
@@ -155,11 +143,7 @@ public class Timeline {
     
     /// Resumes the `Timeline`.
     public func resume() {
-        
-        if case .playing = status {
-            return
-        }
-        
+        if case .playing = status { return }
         clock.start()
         timer = makeTimer()
         status = .playing
@@ -183,20 +167,14 @@ public class Timeline {
     /// - returns: The seconds, frames, and actions values of the next event, if present.
     /// Otherwise, `nil`.
     private var next: (Seconds, Frames, [Action])? {
-
-        guard playbackIndex < schedule.keys.endIndex else {
-            return nil
-        }
-
+        guard playbackIndex < schedule.keys.endIndex else { return nil }
         let (nextSeconds, nextActions) = schedule[playbackIndex]
-
         let nextFrames = frames(
             scheduledDate: nextSeconds,
             lastPausedDate: lastPausedDate,
             rate: rate,
             playbackRate: playbackRate
         )
-        
         return (
             nextSeconds,
             nextFrames,
@@ -217,17 +195,12 @@ public class Timeline {
         }
         
         if currentFrame >= nextFrame {
-            
             nextActions.forEach { action in
-                
-                // perform the action body
                 action.body()
-                
                 if case let .looping(interval, _) = action.kind {
                     add(action.echo, at: nextSeconds + interval)
                 }
             }
-            
             playbackIndex += 1
         }
     }
@@ -243,19 +216,9 @@ internal func frames(
 {
     let interval = 1 / rate
     let timeSincePlaybackRateChange = scheduledDate - lastPausedDate
-    
-    guard timeSincePlaybackRateChange > 0 else {
-        return 0
-    }
-    
+    guard timeSincePlaybackRateChange > 0 else { return 0 }
     let playbackInterval = interval / playbackRate
-    
-    return Frames(
-        round(
-            lastPausedDate * interval +
-            playbackInterval * timeSincePlaybackRateChange
-        )
-    )
+    return Frames(round(lastPausedDate * interval + playbackInterval * timeSincePlaybackRateChange))
 }
 
 extension Timeline: CustomStringConvertible {

@@ -31,7 +31,7 @@ class TimelineTests: XCTestCase {
         let timeStamp: Seconds = 0.5
         
         let timeline = Timeline(rate: 1/60)
-        timeline.add(action: body, at: timeStamp)
+        timeline.schedule(body, at: timeStamp)
         
         XCTAssertEqual(timeline.schedule.count, 1)
     }
@@ -49,7 +49,7 @@ class TimelineTests: XCTestCase {
         let timeline = Timeline()
         
         for offset in 0..<5 {
-            timeline.add(action: { }, at: Seconds(offset))
+            timeline.schedule({ }, at: Seconds(offset))
         }
         
         XCTAssertEqual(timeline.schedule.count, 5)
@@ -124,7 +124,7 @@ class TimelineTests: XCTestCase {
         
         // Fill up Timeline
         for offset in 0..<5 {
-            timeline.add(action: increment, at: Seconds(offset))
+            timeline.schedule(increment, at: Seconds(offset))
         }
         
         // Assert that we have counted to five
@@ -134,7 +134,7 @@ class TimelineTests: XCTestCase {
             timeline.stop()
         }
         
-        timeline.add(action: assertion, at: 5)
+        timeline.schedule(assertion, at: 5)
         
         // Get things started
         timeline.start()
@@ -156,10 +156,9 @@ class TimelineTests: XCTestCase {
         
         timeline.loop(action: increment, every: 1, offsetBy: 0)
         
-        timeline.add(
-            action: {
+        timeline.schedule(
+            {
                 XCTAssertEqual(count, 5)
-                
                 timeline.stop()
                 unfulfilledExpectation.fulfill()
             },
@@ -186,7 +185,7 @@ class TimelineTests: XCTestCase {
                 XCTAssertEqual(clock.elapsed, playbackTime, accuracy: 0.01)
             }
             
-            timeline.add(action: assertion, at: Seconds(offset))
+            timeline.schedule(assertion, at: Seconds(offset))
         }
         
         timeline.playbackRate = 0.5
@@ -214,7 +213,7 @@ class TimelineTests: XCTestCase {
                 XCTAssertEqual(clock.elapsed, playbackTime, accuracy: 0.01)
             }
             
-            timeline.add(action: assertion, at: Seconds(offset))
+            timeline.schedule(assertion, at: Seconds(offset))
         }
         
         timeline.playbackRate = 2
@@ -245,8 +244,8 @@ class TimelineTests: XCTestCase {
             XCTAssertEqual(clock.elapsed, 3, accuracy: 0.01)
         }
         
-        referenceTimeline.add(action: oneSecondReference, at: 1)
-        referenceTimeline.add(action: twoSecondsReference, at: 2)
+        referenceTimeline.schedule(oneSecondReference, at: 1)
+        referenceTimeline.schedule(twoSecondsReference, at: 2)
         
         // pause the reference timeline at one second
         let oneSecondRealLife = {
@@ -259,8 +258,8 @@ class TimelineTests: XCTestCase {
             referenceTimeline.resume()
         }
         
-        realLifeTimeline.add(action: oneSecondRealLife, at: 1)
-        realLifeTimeline.add(action: twoSecondsRealLife, at: 2)
+        realLifeTimeline.schedule(oneSecondRealLife, at: 1)
+        realLifeTimeline.schedule(twoSecondsRealLife, at: 2)
         
         clock.start()
         referenceTimeline.start()
@@ -320,7 +319,7 @@ class TimelineTests: XCTestCase {
                 }
             }
             
-            timeline.add(action: action, at: offset)
+            timeline.schedule(action, at: offset)
         }
         
         // Finish up 1 second after done
@@ -347,7 +346,7 @@ class TimelineTests: XCTestCase {
             timeline.stop()
         }
         
-        timeline.add(action: assertion, at: range.last!)
+        timeline.schedule(assertion, at: range.last!)
         
         // Start the timeline
         timeline.start()
