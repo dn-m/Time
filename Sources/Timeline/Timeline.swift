@@ -11,7 +11,7 @@ import DataStructures
 import Time
 
 /// Quantization of `Seconds` values by the `rate`.
-public typealias Frames = UInt64
+public typealias Ticks = UInt64
 
 /// Store closures to be performed at offsets.
 ///
@@ -47,12 +47,9 @@ public class Timeline {
     
     /// Current state of the `Timeline`.
     public var status: Status = .stopped
-    
-    /// Privately modified index of current events.
-    internal private(set) var playbackIndex: Int = 0
-    
+
     /// The current frame.
-    internal var currentFrame: Frames {
+    internal var currentFrame: Ticks {
         return frames(
             scheduledDate: clock.elapsed + lastPausedDate,
             lastPausedDate: lastPausedDate,
@@ -112,7 +109,6 @@ public class Timeline {
     /// Starts the `Timeline`.
     public func start() {
         if case .playing = status { return }
-        playbackIndex = 0
         lastPausedDate = 0
         clock.start()
         timer = makeTimer()
@@ -157,31 +153,9 @@ public class Timeline {
         timer.start()
         return timer
     }
-    
-    /// - returns: The seconds, frames, and actions values of the next event, if present.
-    /// Otherwise, `nil`.
-    private var next: (Seconds, Frames, [Action])? {
 
-        guard playbackIndex < schedule.atomic.keys.endIndex else {
-            print("done")
-            return nil
-        }
-
-        // Look in atomic
-
-        // Look in looping
-        let (nextSeconds, nextActions) = schedule.atomic[playbackIndex]
-        let nextFrames = frames(
-            scheduledDate: nextSeconds,
-            lastPausedDate: lastPausedDate,
-            rate: rate,
-            playbackRate: playbackRate
-        )
-        return (
-            nextSeconds,
-            nextFrames,
-            nextActions
-        )
+    public var next: (Seconds, [Action])? {
+        return schedule.next
     }
 
     /// Called rapidly by the `timer`, a check is made based on the elapsed time whether or not
@@ -190,34 +164,44 @@ public class Timeline {
     /// If so, `playbackIndex` is incremented.
     private func advance() {
 
-        guard let (nextSeconds, nextFrame, nextActions) = next else {
+        guard let (seconds, actions) = next else {
             completion?()
             stop()
             return
         }
-        
-        if currentFrame >= nextFrame {
-            nextActions.forEach { action in
-                action.operation()
-            }
-            playbackIndex += 1
+
+        if currentFrame >= playbackFrames(scheduledDate: seconds) {
+            actions.forEach(perform)
+            schedule.advance()
         }
+    }
+
+    // FIXME: Refactor, see below
+    func playbackFrames(scheduledDate: Seconds) -> Ticks {
+        return frames(
+            scheduledDate: scheduledDate,
+            lastPausedDate: lastPausedDate,
+            rate: rate,
+            playbackRate: playbackRate
+        )
     }
 }
 
 /// Converts seconds into frames for the given rate.
+//
+// FIXME: Refactor, see above
 internal func frames(
     scheduledDate: Seconds,
     lastPausedDate: Seconds = 0,
     rate: Seconds,
     playbackRate: Double
-) -> Frames
+) -> Ticks
 {
     let interval = 1 / rate
     let timeSincePlaybackRateChange = scheduledDate - lastPausedDate
     guard timeSincePlaybackRateChange > 0 else { return 0 }
     let playbackInterval = interval / playbackRate
-    return Frames(round(lastPausedDate * interval + playbackInterval * timeSincePlaybackRateChange))
+    return Ticks(round(lastPausedDate * interval + playbackInterval * timeSincePlaybackRateChange))
 }
 
 extension Timeline: CustomStringConvertible {

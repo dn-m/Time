@@ -52,5 +52,8 @@ extension Timeline {
             return identifiers.any(satisfy: hasIdentifier)
         }
     }
+}
 
+public func perform(_ action: Timeline.Action) {
+    action.operation()
 }

@@ -20,7 +20,7 @@ class TimelineTests: XCTestCase {
         let timeline = Timeline(rate: 1/60)
         timeline.schedule(at: timeStamp) { print("something") }
         
-        XCTAssertEqual(timeline.schedule.atomic.count, 1)
+        XCTAssertEqual(timeline.schedule.atomic.base.count, 1)
     }
     
     func testStateAtInitStopped() {
