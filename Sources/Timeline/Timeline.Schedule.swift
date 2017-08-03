@@ -101,7 +101,7 @@ public class LoopingActionSchedule: ScheduleProtocol {
 
 extension Timeline {
 
-    public struct Schedule {
+    public class Schedule: ScheduleAdvancing {
 
         private var nextSchedules: [ScheduleAdvancing] {
             let advanceable: [ScheduleAdvancing] = [atomic,looping]
@@ -131,7 +131,7 @@ extension Timeline {
 
         // MARK: Building a Schedule
 
-        public mutating func schedule(
+        public func schedule(
             at offset: Seconds,
             identifiers: [String] = [],
             performing operation: @escaping Action.Operation
@@ -141,11 +141,11 @@ extension Timeline {
             schedule(action, at: offset)
         }
 
-        public mutating func schedule(_ action: Action.Atomic, at offset: Seconds) {
+        public func schedule(_ action: Action.Atomic, at offset: Seconds) {
             atomic.schedule(action, at: offset)
         }
 
-        public mutating func loop(
+        public func loop(
             every interval: Seconds,
             startingAt offset: Seconds = 0,
             identifiers: [String] = [],
@@ -158,18 +158,18 @@ extension Timeline {
             )
         }
 
-        public mutating func loop(_ action: Action.Looping, startingAt offset: Seconds) {
+        public func loop(_ action: Action.Looping, startingAt offset: Seconds) {
             looping.schedule(action, at: offset)
         }
 
-        public mutating func insert(contentsOf schedule: Schedule) {
+        public func insert(contentsOf schedule: Schedule) {
             atomic.schedule(contentsOf: schedule.atomic)
             looping.schedule(contentsOf: schedule.looping)
         }
 
         // Modifying a Schedule
 
-        public mutating func removeAll(identifiers: Set<String> = []) {
+        public func removeAll(identifiers: Set<String> = []) {
             looping.removeAll(identifiers: identifiers)
             atomic.removeAll(identifiers: identifiers)
         }
