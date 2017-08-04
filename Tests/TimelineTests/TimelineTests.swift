@@ -35,7 +35,7 @@ class TimelineTests: XCTestCase {
         
         let rate: Seconds = 1/120
         let scheduledDate: Seconds = 2
-        let expectedFrames: Frames = 240
+        let expectedFrames: Ticks = 240
         
         let result = frames(
             scheduledDate: scheduledDate,
@@ -60,7 +60,7 @@ class TimelineTests: XCTestCase {
         // new playback rate: twice as fast
         let newPlaybackRate = 2.0
         
-        let expectedFrames: Frames = 180
+        let expectedFrames: Ticks = 180
         
         let result = frames(
             scheduledDate: scheduledDate,

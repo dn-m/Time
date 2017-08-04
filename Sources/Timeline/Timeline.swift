@@ -187,6 +187,11 @@ public class Timeline {
     }
 }
 
+public func perform(_ action: Action) {
+    action.operation()
+}
+
+
 /// Converts seconds into frames for the given rate.
 //
 // FIXME: Refactor, see above
