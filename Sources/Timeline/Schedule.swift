@@ -56,7 +56,7 @@ public class Schedule {
     }
 
     /// Insert the given `action` to be performed atomically the the given `offset`.
-    public func insert(_ action: Action, at offset: Seconds) {
+    private func insert(_ action: Action, at offset: Seconds) {
         atomic.insert(action, at: offset)
     }
 
@@ -75,7 +75,7 @@ public class Schedule {
     }
 
     /// Schedule the given `action` to loop, starting at the given `offset`.
-    public func loop(_ action: Action.Looping, startingAt offset: Seconds) {
+    private func loop(_ action: Action.Looping, startingAt offset: Seconds) {
         looping.insert(action, at: offset)
     }
 
