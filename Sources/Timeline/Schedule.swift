@@ -11,14 +11,10 @@ import StructureWrapping
 import DataStructures
 import Time
 
+/// Schedule of atomic and looping actions.
 public class Schedule {
 
-    private var nextSchedules: [SubSchedule] {
-        return [atomic,looping]
-            .filter { $0.next != nil }
-            .extrema(property: { $0.next!.offset }, areInIncreasingOrder: <)
-    }
-
+    /// Next set of events with the offset in scheduled-time in Seconds
     public var next: (offset: Seconds, actions: [Action])? {
         guard !nextSchedules.isEmpty else { return nil }
         let offset = nextSchedules.first!.next!.offset
@@ -26,10 +22,17 @@ public class Schedule {
         return (offset, actions)
     }
 
-    // Storage of atomic events to be performed, stored by offset in Seconds
+    /// The schedules which conatined the soonest actions.
+    private var nextSchedules: [SubSchedule] {
+        return [atomic,looping]
+            .filter { $0.next != nil }
+            .extrema(property: { $0.next!.offset }, areInIncreasingOrder: <)
+    }
+
+    // Storage of atomic events to be performed, stored by offset in scheduled-time in Seconds.
     internal var atomic: SubSchedule
 
-    // Storage of looping events to be performed, stored by offset in Seconds
+    // Storage of looping events to be performed, stored by offset in scheduled-time in Seconds.
     internal var looping: SubSchedule.Looping
 
     /// Creates an empty Schedule.
@@ -40,20 +43,24 @@ public class Schedule {
 
     // MARK: Building a Schedule
 
-    public func schedule(
+    /// Schedule the given `operation` to be performed at the given `offset`, tagged with the given
+    /// `identifiers`.
+    public func insert(
         at offset: Seconds,
         identifiers: [String] = [],
         performing operation: @escaping Action.Operation
     )
     {
         let action = Action(identifiers: identifiers, performing: operation)
-        schedule(action, at: offset)
+        insert(action, at: offset)
     }
 
-    public func schedule(_ action: Action, at offset: Seconds) {
-        atomic.add(action, at: offset)
+    /// Insert the given `action` to be performed atomically the the given `offset`.
+    public func insert(_ action: Action, at offset: Seconds) {
+        atomic.insert(action, at: offset)
     }
 
+    /// Schedule the given `operation` to loop every `interval`, starting at the given `offset`.
     public func loop(
         every interval: Seconds,
         startingAt offset: Seconds = 0,
@@ -67,17 +74,20 @@ public class Schedule {
         )
     }
 
+    /// Schedule the given `action` to loop, starting at the given `offset`.
     public func loop(_ action: Action.Looping, startingAt offset: Seconds) {
-        looping.add(action, at: offset)
+        looping.insert(action, at: offset)
     }
 
+    /// Inserts the contents of the given `schedule`.
     public func insert(contentsOf schedule: Schedule) {
-        atomic.schedule(contentsOf: schedule.atomic)
-        looping.schedule(contentsOf: schedule.looping)
+        atomic.insert(contentsOf: schedule.atomic)
+        looping.insert(contentsOf: schedule.looping)
     }
 
     // Modifying a Schedule
 
+    /// Remove all of the actions that match the given `identifiers`.
     public func removeAll(identifiers: Set<String> = []) {
         looping.removeAll(identifiers: identifiers)
         atomic.removeAll(identifiers: identifiers)
@@ -85,36 +95,9 @@ public class Schedule {
 
     // Navigation
 
+    /// Advance each of the sub schedules as necessary.
     public func advance() {
         nextSchedules.forEach { $0.advance() }
-    }
-}
-
-extension Timeline {
-
-    /// Schedules the given `operation` to be performed at the given `offset` in `Seconds`.
-    public func schedule(at offset: Seconds, performing operation: @escaping Action.Operation) {
-        schedule.schedule(at: offset, identifiers: [identifier], performing: operation)
-    }
-
-    /// Schedules the given looping `operation`, to be performed every `interval`, offset by the
-    /// given `offset`.
-    public func loop(
-        every interval: Seconds,
-        startingAt offset: Seconds = 0,
-        operation: @escaping Action.Operation
-    )
-    {
-        schedule.loop(
-            every: interval,
-            startingAt: offset,
-            identifiers: [identifier],
-            performing: operation
-        )
-    }
-
-    public func removeAll(identifiers: Set<String> = []) {
-        schedule.removeAll(identifiers: identifiers)
     }
 }
 

@@ -18,7 +18,7 @@ class TimelineTests: XCTestCase {
 
         let timeStamp: Seconds = 0.5
         let timeline = Timeline(rate: 1/60)
-        timeline.schedule(at: timeStamp) { print("something") }
+        timeline.insert(at: timeStamp) { print("something") }
         
         XCTAssertEqual(timeline.schedule.atomic.base.count, 1)
     }
@@ -97,10 +97,10 @@ class TimelineTests: XCTestCase {
         
         // Fill up Timeline
         for offset in 0..<5 {
-            timeline.schedule(at: Seconds(offset), performing: increment)
+            timeline.insert(at: Seconds(offset), performing: increment)
         }
         
-        timeline.schedule(at: 5) {
+        timeline.insert(at: 5) {
             XCTAssertEqual(count, 5)
             unfulfilledExpectation.fulfill()
             timeline.stop()
@@ -124,7 +124,7 @@ class TimelineTests: XCTestCase {
         var count = 0
         timeline.loop(every: 1, startingAt: 0) { count += 1 }
         
-        timeline.schedule(at: 4.1) {
+        timeline.insert(at: 4.1) {
             XCTAssertEqual(count, 5)
             timeline.stop()
             unfulfilledExpectation.fulfill()
@@ -146,7 +146,7 @@ class TimelineTests: XCTestCase {
             // actual time
             let playbackTime = Seconds(offset) * 2
             
-            timeline.schedule(at: Seconds(offset)) {
+            timeline.insert(at: Seconds(offset)) {
                 XCTAssertEqual(clock.elapsed, playbackTime, accuracy: 0.01)
             }
         }
@@ -172,7 +172,7 @@ class TimelineTests: XCTestCase {
             // actual time
             let playbackTime = Seconds(offset) / 2
             
-            timeline.schedule(at: Seconds(offset)) {
+            timeline.insert(at: Seconds(offset)) {
                 XCTAssertEqual(clock.elapsed, playbackTime, accuracy: 0.01)
             }
         }
@@ -205,8 +205,8 @@ class TimelineTests: XCTestCase {
             XCTAssertEqual(clock.elapsed, 3, accuracy: 0.01)
         }
         
-        referenceTimeline.schedule(at: 1, performing: oneSecondReference)
-        referenceTimeline.schedule(at: 2, performing: twoSecondsReference)
+        referenceTimeline.insert(at: 1, performing: oneSecondReference)
+        referenceTimeline.insert(at: 2, performing: twoSecondsReference)
         
         // pause the reference timeline at one second
         let oneSecondRealLife = {
@@ -219,8 +219,8 @@ class TimelineTests: XCTestCase {
             referenceTimeline.resume()
         }
         
-        realLifeTimeline.schedule(at: 1, performing: oneSecondRealLife)
-        realLifeTimeline.schedule(at: 2, performing: twoSecondsRealLife)
+        realLifeTimeline.insert(at: 1, performing: oneSecondRealLife)
+        realLifeTimeline.insert(at: 2, performing: twoSecondsRealLife)
         
         clock.start()
         referenceTimeline.start()
@@ -280,7 +280,7 @@ class TimelineTests: XCTestCase {
                 }
             }
             
-            timeline.schedule(at: offset, performing: operation)
+            timeline.insert(at: offset, performing: operation)
         }
         
         // Finish up 1 second after done
@@ -307,7 +307,7 @@ class TimelineTests: XCTestCase {
             timeline.stop()
         }
         
-        timeline.schedule(at: range.last!, performing: assertion)
+        timeline.insert(at: range.last!, performing: assertion)
         
         // Start the timeline
         timeline.start()

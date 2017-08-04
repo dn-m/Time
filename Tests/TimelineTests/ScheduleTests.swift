@@ -18,7 +18,7 @@ class ScheduleTests: XCTestCase {
         let timeline = Timeline(rate: 1/100)
         
         for offset in 0..<10 {
-            timeline.schedule(at: Seconds(offset), performing: { })
+            timeline.insert(at: Seconds(offset), performing: { })
         }
         
         let expectedSecondsOffsets: SortedArray<Seconds> = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -28,7 +28,7 @@ class ScheduleTests: XCTestCase {
     func testIdentifier() {
         
         let timeline = Timeline(identifier: "ABC")
-        timeline.schedule(at: 0, performing: { })
+        timeline.insert(at: 0, performing: { })
         
         let action = timeline.schedule.atomic.base.first!.1.first!
         let identifier = action.identifiers.first!
@@ -41,7 +41,7 @@ class ScheduleTests: XCTestCase {
         let timeline = Timeline()
 
         for offset in 0..<5 {
-            timeline.schedule(at: Seconds(offset)) { }
+            timeline.insert(at: Seconds(offset)) { }
         }
 
         XCTAssertEqual(timeline.schedule.atomic.base.count, 5)

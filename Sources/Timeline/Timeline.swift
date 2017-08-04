@@ -103,8 +103,36 @@ public class Timeline {
         self.schedule = schedule
         self.completion = completion
     }
+
+    // MARK: - Creating the Schedule
+
+    /// Schedules the given `operation` to be performed at the given `offset` in `Seconds`.
+    public func insert(at offset: Seconds, performing operation: @escaping Action.Operation) {
+        schedule.insert(at: offset, identifiers: [identifier], performing: operation)
+    }
+
+    /// Schedules the given looping `operation`, to be performed every `interval`, offset by the
+    /// given `offset`.
+    public func loop(
+        every interval: Seconds,
+        startingAt offset: Seconds = 0,
+        operation: @escaping Action.Operation
+        )
+    {
+        schedule.loop(
+            every: interval,
+            startingAt: offset,
+            identifiers: [identifier],
+            performing: operation
+        )
+    }
+
+    /// Remove all of the actions that match the given `identifiers`.
+    public func removeAll(identifiers: Set<String> = []) {
+        schedule.removeAll(identifiers: identifiers)
+    }
     
-    // MARK: - Instance Methods
+    // MARK: - Playback
     
     /// Starts the `Timeline`.
     public func start() {

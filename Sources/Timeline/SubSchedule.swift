@@ -16,9 +16,9 @@ internal class SubSchedule {
             return base.first
         }
 
-        internal override func add(_ action: Action, at offset: Seconds) {
+        internal override func insert(_ action: Action, at offset: Seconds) {
             assert(action is Action.Looping)
-            super.add(action, at: offset)
+            super.insert(action, at: offset)
         }
 
         internal override func advance() {
@@ -35,28 +35,36 @@ internal class SubSchedule {
         }
     }
 
+    /// Next sets of actions with their offset in scheduled-time
     internal var next: (offset: Seconds, actions: [Action])? {
         guard index < base.count else { return nil }
         return base[index]
     }
 
+    /// Storage of actions by their offset in scheduled-time
     internal var base: SortedDictionary<Seconds, [Action]>
+
+    /// Index of current set of actions
     private var index: Int
 
+    /// Creates an empty SubSchedule
     internal init() {
         self.base = [:]
         self.index = 0
     }
 
+    /// Move to the next set of actions
     internal func advance() {
         index += 1
     }
 
-    internal func add(_ action: Action, at offset: Seconds) {
+    /// Add the given `action` at the given `offset`.
+    internal func insert(_ action: Action, at offset: Seconds) {
         base.safelyAppend(action, toArrayWith: offset)
     }
 
-    internal func schedule(contentsOf schedule: SubSchedule) {
+    ///
+    internal func insert(contentsOf schedule: SubSchedule) {
         base.insert(contentsOf: schedule.base)
     }
 
