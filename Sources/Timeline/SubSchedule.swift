@@ -63,11 +63,12 @@ internal class SubSchedule {
         base.safelyAppend(action, toArrayWith: offset)
     }
 
-    ///
+    /// Insert the contents of the given `schedule` into this one.
     internal func insert(contentsOf schedule: SubSchedule) {
         base.insert(contentsOf: schedule.base)
     }
 
+    /// Remove all of the actions with the given `identifiers`.
     internal func removeAll(identifiers: Set<String> = []) {
         for (key, actions) in base {
             base[key] = actions.removing(identifiers: identifiers)
