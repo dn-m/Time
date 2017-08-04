@@ -9,8 +9,10 @@ import Structure
 import DataStructures
 import Time
 
+/// Operation to be performed, with identifiers.
 public class Action {
 
+    /// Operation to be performed by an Action
     public typealias Operation = () -> Void
 
     /// Action which repeats at a given interval
@@ -19,6 +21,7 @@ public class Action {
         /// Interval at which the action is repeated
         let interval: Seconds
 
+        /// Creates an Action.Looping that will loop every `interval`, with the given `identifiers`.
         init(
             every interval: Seconds,
             identifiers: [String] = [],
@@ -33,6 +36,7 @@ public class Action {
     var identifiers: [String]
     let operation: Operation
 
+    /// Creates an Action which wraps the given `operation` with the given `identifiers`.
     init(identifiers: [String] = [], performing operation: @escaping Operation) {
         self.identifiers = identifiers
         self.operation = operation
