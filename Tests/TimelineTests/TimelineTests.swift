@@ -361,8 +361,8 @@ class TimelineTests: XCTestCase {
     func testAccuracyOfLongIntervalForAMinute() {
         assertAccuracyWithRepeatedPulse(interval: 12.3456, for: 60)
     }
-    
-    func testAccuracyWithPuleEverySecondFor30Minutes() {
+
+    func testAccuracyWithPulseEverySecondFor30Minutes() {
         assertAccuracyWithPulseEverySecond(for: 60)
     }
 }
