@@ -22,7 +22,7 @@ public class Schedule {
         return (offset, actions)
     }
 
-    /// The schedules which conatined the soonest actions.
+    /// The schedules which contain the soonest actions.
     private var nextSchedules: [SubSchedule] {
         return [atomic,looping]
             .filter { $0.next != nil }
