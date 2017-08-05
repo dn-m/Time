@@ -234,12 +234,10 @@ class TimelineTests: XCTestCase {
     
     func assertAccuracyWithRepeatedPulse(interval: Seconds, for duration: Seconds) {
      
-        guard duration > 0 else {
-            return
-        }
+        assert(duration > 0)
         
         let unfulfilledExpectation = expectation(description: "Test accuracy of Timer")
-        
+
         let range = stride(from: Seconds(0), to: duration, by: interval).map { $0 }
         
         // Data
@@ -248,7 +246,8 @@ class TimelineTests: XCTestCase {
         
         // Create `Timeline` to test
         let timeline = Timeline()
-        
+
+        // Fix: Use `Clock` for these
         let start: UInt64 = DispatchTime.now().uptimeNanoseconds
         var last: UInt64 = DispatchTime.now().uptimeNanoseconds
         
@@ -362,7 +361,7 @@ class TimelineTests: XCTestCase {
         assertAccuracyWithRepeatedPulse(interval: 12.3456, for: 60)
     }
 
-    func testAccuracyWithPulseEverySecondFor30Minutes() {
-        assertAccuracyWithPulseEverySecond(for: 60)
+    func testAccuracyWithPulseEverySecondFor5Minutes() {
+        assertAccuracyWithPulseEverySecond(for: 5 * 60)
     }
 }
