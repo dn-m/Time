@@ -18,22 +18,22 @@ public typealias Ticks = UInt64
 /// Playback can occur at real-time, or modified by the `playbackRate`.
 ///
 public class Timeline {
-    
+
     // MARK: - Nested Types
-    
+
     /// Status of the `Timeline`.
     public enum Status {
-        
+
         /// The `Timeline` is playing.
         case playing
-        
+
         /// The `Timeline` is stopped.
         case stopped
-        
+
         /// The `Timeline` is paused at the given frame offset.
         case paused(Seconds)
     }
-    
+
     // MARK: - Instance Properties
 
     /// The rate at which the `Timeline` is played-back. Defaults to `1`.
@@ -44,7 +44,7 @@ public class Timeline {
             resume()
         }
     }
-    
+
     /// Current state of the `Timeline`.
     public var status: Status = .stopped
 
@@ -60,34 +60,34 @@ public class Timeline {
 
     /// Scale of `Seconds` to `Frames`.
     internal var rate: Seconds
-    
+
     /// Seconds (in schedule-time) of last pause.
     internal var lastPausedDate: Seconds = 0
 
     // MARK: - Mechanisms
-    
+
     /// Schedule that store actions to be performed by their offset time.
     ///
     /// At each offset point, any number of `Actions` can be performed.
     public var schedule: Schedule
-    
+
     /// Calls the `advance()` function rapidly.
     public var timer: Timer?
 
     /// Clock.
     ///
-    /// Measures timing between successive shots of the `timer`, to ensure accuracy and to 
+    /// Measures timing between successive shots of the `timer`, to ensure accuracy and to
     /// prevent drifting.
     public var clock = Clock()
-    
+
     /// Closure to be called when the `Timeline` has reached the end.
     public var completion: (() -> ())?
-    
+
     /// Identifier of `Timeline`.
     public let identifier: String
 
     // MARK: - Initializers
-    
+
     /// Creates an empty `Timeline`.
     public init(
         identifier: String = "",
@@ -131,9 +131,9 @@ public class Timeline {
     public func removeAll(identifiers: Set<String> = []) {
         schedule.removeAll(identifiers: identifiers)
     }
-    
+
     // MARK: - Playback
-    
+
     /// Starts the `Timeline`.
     public func start() {
         if case .playing = status { return }
@@ -142,7 +142,7 @@ public class Timeline {
         timer = makeTimer()
         status = .playing
     }
-    
+
     /// Stops the `Timeline` from executing, and is placed at the beginning.
     public func stop() {
         if case .stopped = status { return }
@@ -150,7 +150,7 @@ public class Timeline {
         timer?.stop()
         status = .stopped
     }
-    
+
     /// Pauses the `Timeline`.
     public func pause() {
         if case .paused = status { return }
@@ -158,7 +158,7 @@ public class Timeline {
         timer?.stop()
         status = .paused(lastPausedDate)
     }
-    
+
     /// Resumes the `Timeline`.
     public func resume() {
         if case .playing = status { return }
@@ -166,14 +166,14 @@ public class Timeline {
         timer = makeTimer()
         status = .playing
     }
-    
+
     /// Skips the given `time` in `Seconds`.
     ///
     /// - warning: Not currently available.
     public func skip(to time: Seconds) {
         fatalError()
     }
-    
+
     /// Creates a new `Timer`, making sure that the previous `Timer` has been killed.
     private func makeTimer() -> Timer {
         self.timer?.stop()
@@ -240,7 +240,7 @@ internal func frames(
 extension Timeline: CustomStringConvertible {
 
     // MARK: - CustomStringConvertible
-    
+
     /// Printed description.
     public var description: String {
         return schedule.description
