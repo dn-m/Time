@@ -1,9 +1,19 @@
 os:
   - osx
+  - linux
 language: generic
 sudo: required
 dist: trusty
-osx_image: xcode9
+osx_image: xcode10
+install:
+  - eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
+env:
+  - SWIFT_VERSION=4.2
 script:
-  - swift build
-  - swift test
+  - swift package update
+  - swift test -c release
+after_success: 
+  - git clone https://github.com/dn-m/Documentarian && cd Documentarian
+  - swift build -c release -Xswiftc -static-stdlib
+  - cd ../
+  - Documentarian/.build/Release/Documentarian
