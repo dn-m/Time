@@ -10,8 +10,8 @@ let package = Package(
         .library(name: "Timeline", targets: ["Timeline"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/dn-m/Structure", .branch("master")),
-        .package(url: "https://github.com/dn-m/Math", .branch("master"))
+        .package(url: "https://github.com/dn-m/Structure", from: "0.20.0"),
+        .package(url: "https://github.com/dn-m/Math", from: "0.6.0")
     ],
     targets: [
 
