@@ -50,7 +50,6 @@ public class Action {
     }
 
     func hasAnyIdentifiers <S> (_ identifiers: S) -> Bool where S: Sequence, S.Element == String {
-        for target in identifiers where self.identifiers.contains(target) { return true }
-        return false
+        return self.identifiers.contains(where: identifiers.contains)
     }
 }
