@@ -5,7 +5,6 @@
 //  Created by James Bean on 8/3/17.
 //
 
-import Structure
 import DataStructures
 import Time
 
@@ -51,6 +50,6 @@ public class Action {
     }
 
     func hasAnyIdentifiers <S> (_ identifiers: S) -> Bool where S: Sequence, S.Element == String {
-        return identifiers.any(satisfy: hasIdentifier)
+        return self.identifiers.contains(where: identifiers.contains)
     }
 }
