@@ -30,7 +30,7 @@ internal class SubSchedule {
         private func bump(_ actions: [Action], from offset: Seconds) {
             (actions as! [Action.Looping])
                 .map { action in (offset + action.interval, action) }
-                .forEach { offset, action in base.safelyAppend(action, toArrayWith: offset) }
+                .forEach { insert($1, at: $0) }
             base[offset] = nil
         }
     }
@@ -60,7 +60,7 @@ internal class SubSchedule {
 
     /// Add the given `action` at the given `offset`.
     internal func insert(_ action: Action, at offset: Seconds) {
-        base.safelyAppend(action, toArrayWith: offset)
+        base.safelyAppend(action, forKey: offset)
     }
 
     /// Insert the contents of the given `schedule` into this one.
