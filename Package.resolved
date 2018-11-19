@@ -6,8 +6,17 @@
         "repositoryURL": "https://github.com/dn-m/Math",
         "state": {
           "branch": "master",
-          "revision": "d1284e043377c0b924cba2ffa2ab0b9aa9dd246f",
+          "revision": "075ebb5a934251ed7acbe4feace925ed7e322d0f",
           "version": null
+        }
+      },
+      {
+        "package": "PerformanceTesting",
+        "repositoryURL": "https://github.com/dn-m/PerformanceTesting",
+        "state": {
+          "branch": null,
+          "revision": "d48417c837b1a029dd9567dfa7b5ee3cfa9a0ec7",
+          "version": "0.3.0"
         }
       },
       {
@@ -15,7 +24,7 @@
         "repositoryURL": "https://github.com/dn-m/Structure",
         "state": {
           "branch": "master",
-          "revision": "81d894ed931864734c73f9507e5d2f147b40a363",
+          "revision": "11e920b1b883fe169c5ebb58e6489c0f28e9ad90",
           "version": null
         }
       }
